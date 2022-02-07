@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use Doctrine\DBAL\Driver\OCI8\Exception\Error;
+use Error;
 
 class PlaceholderImageService
 {

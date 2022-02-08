@@ -4,12 +4,21 @@ namespace App\Service;
 
 use Doctrine\DBAL\Driver\OCI8\Exception\Error;
 use Error;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class PlaceholderImageService
 {
+    private string $saveDirectory;
+    private FilenameGenerator $generator;
     private string $placeholderServiceUrl = "https://via.placeholder.com/";
     private int $minimumImageWidth = 150;
     private int $minimumImageHeight = 150;
+
+    public function __construct(FilenameGenerator $generator, ParameterBagInterface $container)
+    {
+        $this->generator = $generator;
+        $this->saveDirectory = $container->get("upload.directory");
+    }
 
     /**
      * Return the downloaded image contents.
@@ -32,8 +41,8 @@ class PlaceholderImageService
 
     public function getNewImageAndSave(int $imageWidth, int $imageHeight, string $filename): bool
     {
-        $file = __DIR__ . "/../../uploads/$filename";
-        $contents = $this->getNewImageStream($imageWidth, $imageWidth);
+        $file = __DIR__ . "/../../uploads/$filename" . $this->filenameGenerator->getUniqFilename();
+        $contents = $this->getNewImageStream($imageWidth, $imageHeight);
         $bytes = file_put_contents($file, $contents);
         return file_exists($file) && $bytes;
     }

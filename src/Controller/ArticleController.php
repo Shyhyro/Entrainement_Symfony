@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Service\PlaceholderImageService;
 use http\Env\Response;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/articles', name: 'articles_')]
@@ -25,8 +26,8 @@ class ArticleController extends AbstractController
      * @param PlaceholderImageService $placeholderImageService
      * @return Response
      */
-    #[Route('/add', name: 'add')]
-    public function add(PlaceholderImageService $placeholderImageService) :Response
+    #[Route('/addImage', name: 'add')]
+    public function addImage(PlaceholderImageService $placeholderImageService) :Response
     {
         try {
             $success = $placeholderImageService->getNewImageAndSave(350, 250, 'articlexyz-thumb.png');
@@ -40,5 +41,33 @@ class ArticleController extends AbstractController
         }
 
         return new Response("<div>Erreur en ajoutant l'article</div>");
+    }
+
+    #[Route('/articles', name: 'articles_list')]
+    public function list() :JsonResponse
+    {
+        $articles = [
+            new Articles(),
+            new Articles(),
+            new Articles(),
+            new Articles(),
+        ];
+
+        return $this->json([
+            $articles[0]->getTitle(),
+            $articles[1]->getTitle(),
+            $articles[2]->getTitle(),
+            $articles[3]->getTitle(),
+        ]);
+    }
+
+    #[Route('/article/add', name: 'article_add')]
+    public function add() :Response
+    {
+        if (!in_array('ROLE_AUTHOR', $this->getUser()->getRoles()))
+        {
+            return $this->redirectToRoute('articles_list');
+        }
+        return $this->render('article/add.html.twig');
     }
 }
